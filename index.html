@@ -5,164 +5,64 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Daily Activity Tracker</title>
-
-  <!-- Eye-friendly Styles -->
   <style>
-    :root {
-      --bg: #f5f7fa;
-      --card-bg: #ffffff;
-      --primary: #007bff;
-      --primary-hover: #0056b3;
-      --text: #333333;
-      --border: #d1d5da;
-      --header-bg: #ffffff;
-      --header-text: #0056b3;
-      --table-header: #f0f0f0;
-      --table-row-alt: #fafbfc;
-      --dirty-bg: #fff3cd;
-    }
-    body {
-      margin:0; padding:0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: var(--bg); color: var(--text); line-height:1.6;
-    }
-    .header {
-      background: var(--header-bg);
-      color: var(--header-text);
-      padding:1rem;
-      display:flex; align-items:center; justify-content:space-between;
-      box-shadow:0 2px 4px rgba(0,0,0,0.1);
-    }
-    .header h1 { margin:0; font-size:1.5rem; }
-    #version-note {
-      font-size:0.9rem;
-      margin-left:1rem;
-      color: var(--text);
-    }
-    .header button {
-      background: var(--primary);
-      color:#fff;
-      border:none;
-      padding:0.3rem 0.6rem;
-      border-radius:4px;
-      cursor:pointer;
-      transition: background 0.2s;
-    }
-    .header button:hover { background: var(--primary-hover); }
-
-    #calendar-controls {
-      text-align:center; margin:1rem 0;
-    }
-    #calendar-container {
-      display:flex; justify-content:center; gap:2rem;
-      margin:0 auto 1rem;
-      transform:scale(0.8); transform-origin:top center;
-    }
-    .calendar {
-      border-collapse:collapse;
-      border:1px solid var(--border);
-      border-radius:4px;
-      background:#fff;
-      box-shadow:0 1px 3px rgba(0,0,0,0.08);
-    }
-    .calendar caption {
-      padding:0.5rem;
-      background:var(--primary);
-      color:#fff;
-      font-weight:bold;
-      border-bottom:1px solid var(--border);
-    }
+    :root { --card-bg:#f0f0f0; --highlight:#007bff; }
+    body { font-family:sans-serif; margin:0; padding:0; background:#fafafa; }
+    .header { display:flex; justify-content:space-between; align-items:center;
+              padding:1rem; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.1); }
+    #calendar-controls { text-align:center; margin:1rem 0; }
+    #calendar-container { display:flex; justify-content:center; gap:2rem;
+                          margin:0 auto; transform:scale(0.8); transform-origin:top center; }
+    .calendar { border-collapse:collapse; }
+    .calendar caption { margin-bottom:0.5rem; font-weight:bold; }
     .calendar th, .calendar td {
-      border:1px solid var(--border);
-      padding:0.25rem 0.5rem;
-      text-align:center;
+      border:1px solid #aaa; padding:0.25rem 0.5rem; text-align:center;
       width:2.5rem; height:2.5rem;
     }
+    .calendar th { background:#ddd; }
+    #selected-info { text-align:center; font-size:1.1rem; margin-bottom:1rem; }
+    #help-panel { display:none; padding:1rem; background:#eef; border:1px solid #ccd;
+                  margin:1rem; border-radius:4px; }
+    .container { padding:1rem; }
+    .cards { display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:1rem; }
+    .card { flex:1 1 120px; padding:1rem; background:var(--card-bg);
+             border-radius:4px; text-align:center; }
+    .controls { margin-bottom:1rem; display:flex; gap:0.5rem;
+                flex-wrap:wrap; align-items:center; }
+    .controls input, .controls button, .controls label { font-size:1rem; }
+    .table-container { overflow-x:auto; margin-bottom:1rem; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { border:1px solid #ddd; padding:0.5rem; }
+    th { background:#eee; }
+    .dirty { background:#fff3cd; }
+    .toast { position:fixed; top:1rem; right:1rem; padding:0.75rem 1rem;
+             background:#28a745; color:#fff; border-radius:4px; display:none; }
+    #all-tasks-container { margin-top:2rem; }
 
-    #selected-info {
-      text-align:center; font-size:1.1rem; margin-bottom:1rem;
-    }
-    #help-panel {
-      display:none; padding:1rem; background:#eef; border:1px solid #ccd;
-      margin:1rem; border-radius:4px;
-    }
-    .cards {
-      display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:1rem;
-    }
-    .card {
-      flex:1 1 120px;
-      background:var(--card-bg);
-      padding:1rem;
-      border-radius:6px;
-      box-shadow:0 1px 3px rgba(0,0,0,0.08);
-      text-align:center;
-      transition:transform 0.15s;
-    }
-    .card:hover { transform:translateY(-2px); }
-    .card div:first-child { font-size:1.4rem; font-weight:bold; }
-
-    .controls {
-      display:flex; flex-wrap:wrap; gap:0.5rem; align-items:center;
-      margin-bottom:1rem;
-    }
-    .controls input,
-    .controls select {
-      padding:0.5rem; border:1px solid var(--border);
-      border-radius:4px; font-size:1rem;
-    }
-    .controls button {
-      background:var(--primary); color:#fff; border:none;
-      padding:0.5rem 1rem; border-radius:4px;
-      font-size:1rem; cursor:pointer;
-      transition:background 0.2s;
-    }
-    .controls button:hover { background:var(--primary-hover); }
-    .controls label {
-      display:flex; align-items:center; gap:0.25rem; font-size:1rem;
-    }
-
-    .table-container {
-      overflow-x:auto; margin-bottom:1rem;
-      background:#fff; border:1px solid var(--border);
-      border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,0.08);
-    }
-    table {
-      width:100%; border-collapse:collapse; min-width:600px;
-    }
-    th, td {
-      padding:0.6rem 0.8rem; border:1px solid var(--border);
-    }
-    th {
-      background:var(--table-header);
-      text-align:left; font-weight:600;
-    }
-    tbody tr:nth-child(even) { background:var(--table-row-alt); }
-    tbody tr.dirty { background:var(--dirty-bg); }
-    button[type="button"] {
-      background:var(--primary); color:#fff; border:none;
-      padding:0.3rem 0.6rem; border-radius:4px;
-      font-size:0.85rem; cursor:pointer;
-      transition:background 0.2s;
-    }
-    button[type="button"]:hover { background:var(--primary-hover); }
-
-    .toast {
-      position:fixed; top:1rem; right:1rem;
-      background:var(--primary); color:#fff;
-      padding:0.75rem 1rem; border-radius:4px;
-      box-shadow:0 1px 4px rgba(0,0,0,0.2);
-      display:none;
+    @media print {
+      /* hide the Action column */
+      #active-tasks-table th:last-child,
+      #active-tasks-table td:last-child,
+      #deleted-tasks-table th:last-child,
+      #deleted-tasks-table td:last-child {
+        display:none!important;
+      }
+      body * { visibility:hidden; }
+      #all-tasks-container, #all-tasks-container * { visibility:visible; }
+      #all-tasks-container { position:absolute; top:0; left:0; width:100%; }
     }
 
     @media (max-width:600px) {
       .cards { flex-direction:column; }
       .controls { flex-direction:column; align-items:stretch; }
-      .controls input, .controls select, .controls button, .controls label {
+      .controls input, .controls button, .controls label {
         width:100%; margin-bottom:0.5rem;
       }
       #calendar-container { transform:scale(0.6); }
       .calendar caption { font-size:0.9rem; }
-      .calendar th, .calendar td { padding:0.2rem 0.4rem; }
+      .calendar th, .calendar td {
+        width:2rem; height:2rem; padding:0.2rem 0.4rem;
+      }
       table { font-size:0.9rem; }
       th, td { padding:0.4rem; }
       #selected-info { font-size:1rem; }
@@ -172,7 +72,6 @@
 <body>
   <div class="header">
     <h1>Daily Activity Tracker</h1>
-    <span id="version-note">v1.0.0</span>
     <button id="help-toggle" type="button">?</button>
   </div>
 
@@ -266,10 +165,6 @@
 
   <script>
   document.addEventListener('DOMContentLoaded', () => {
-    // Version
-    const VERSION = '1.0.0';
-    document.getElementById('version-note').textContent = `v${VERSION}`;
-
     // Utility
     function getToday() {
       const t=new Date(), y=t.getFullYear(),
@@ -306,7 +201,7 @@
       c.innerHTML='';c.append(createCalendar(y1,m1),createCalendar(y2,m2));
     }
 
-    // TaskManager
+    // Task Manager
     class TaskManager {
       constructor(){
         this.tasks=JSON.parse(localStorage.getItem('tasks')||'[]');
@@ -326,7 +221,7 @@
       clearAll(){this.tasks=[];localStorage.removeItem('tasks');}
     }
 
-    // Refs & state
+    // DOM refs
     const tm=new TaskManager(),
           statuses=['Not Started','In Progress','Deferred','Completed'],
           priorities=['Low','Medium','High'],
@@ -446,7 +341,7 @@
     loadBtn.addEventListener('click',loadTasks);
     saveBtn.addEventListener('click',saveTasks);
     pendingOnly.addEventListener('change',loadTasks);
-    // Init
+    // Initialize
     const today=new Date(),y0=today.getFullYear(),m0=today.getMonth(),nxt=new Date(y0,m0+1),y1=nxt.getFullYear(),m1=nxt.getMonth();
     startInput.value=`${y0}-${String(m0+1).padStart(2,'0')}`;
     endInput.value  =`${y1}-${String(m1+1).padStart(2,'0')}`;
